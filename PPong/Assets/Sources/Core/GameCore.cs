@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PongGame : MonoBehaviour {
+public class GameCore : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

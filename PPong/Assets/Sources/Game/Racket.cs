@@ -10,7 +10,11 @@ namespace PPong.Game
 
         private PongGame.Side m_currentSide;
 
+        private BoxCollider2D m_collider;
+
         public PlayerBase Owner { get; set; }
+
+        public float HalfSize { get; private set; }
 
         public PongGame.Side FieldSide
         {
@@ -21,9 +25,11 @@ namespace PPong.Game
         }
 
         void Start()
-        {
+        {            
             CachedTransform = transform;
             m_currentSide = PongGame.GetFieldSide(CachedTransform.position.y);
+            m_collider = GetComponent<BoxCollider2D>();
+            HalfSize = m_collider.size.x/2;
         }
 
         public void OnBallHit()

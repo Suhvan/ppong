@@ -45,13 +45,20 @@ namespace PPong.Game
 
         void Start()
         {
-            GiveInitialImpulse();
+            
         }
 
-        void GiveInitialImpulse(bool up = true)
+        public void Reset()
         {
+            m_cachedTransform.position = Vector2.zero;
+            m_cachedRigidbody.velocity = Vector2.zero;
+        }
+
+        public IEnumerator GiveInitialImpulse(PongGame.Side targetSide, float delay)
+        {
+            yield return new WaitForSeconds(delay);
             float forceX = Random.Range(-1f, 1f);
-            float forceY = up ? 1 : -1;
+            float forceY = targetSide == PongGame.Side.B ? 1 : -1;
             SetVelocity(new Vector2(forceX, forceY));
         }
 
@@ -76,7 +83,7 @@ namespace PPong.Game
                     sumX += col.GetContact(i).point.x;
                 }
 
-                float forceX = sumX / 2f - racket.transform.position.x;
+                float forceX = sumX / col.contactCount - racket.transform.position.x;
                 float forceY = CurrentFieldSide == PongGame.Side.A ? 1 : -1;
 
                 if (Mathf.Abs(m_cachedTransform.position.y) > Mathf.Abs(racket.transform.position.y))
@@ -91,11 +98,7 @@ namespace PPong.Game
         {
             if (other.gameObject.name == "border")
             {
-                PongGame.Instance.OnBallScored();
-                bool topScored = m_cachedTransform.position.y < 0;
-                m_cachedTransform.position = Vector2.zero;
-                
-                GiveInitialImpulse(topScored);
+                PongGame.Instance.OnBallScored( CurrentFieldSide );
             }
             else
             {

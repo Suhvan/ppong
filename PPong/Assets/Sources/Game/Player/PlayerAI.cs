@@ -4,6 +4,9 @@ namespace PPong.Game
 {
     public class PlayerAI : PlayerBase
     {
+        private const float AI_SPEED = 4.5f;
+        private const float AI_ACCEL = 15f;
+
         public enum Difficulty
         {
             Eazy, Normal, Unreal
@@ -21,8 +24,8 @@ namespace PPong.Game
         public PlayerAI(Racket racket, Difficulty dif) : base(racket)
         {
             m_dif = dif;
-            m_racketMaxSpeed = dif == Difficulty.Unreal? 9 : 4.5f;
-            m_accel = dif == Difficulty.Unreal ? 30f : 15f;
+            m_racketMaxSpeed = dif == Difficulty.Unreal ? AI_SPEED * 2 : AI_SPEED;
+            m_accel = dif == Difficulty.Unreal ? AI_ACCEL * 2 : AI_ACCEL;
             m_curSpeed = 0;
             GenereateNewShift();
         }

@@ -6,6 +6,9 @@ namespace PPong.Game
 {
     public class PongGame : MonoBehaviour
     {
+
+        private const float BALL_IMPULSE_DELAY = 0.5f;
+
         public enum Mode
         {
             PlayerVsSelf,
@@ -19,7 +22,7 @@ namespace PPong.Game
         }
 
         public static Side GetFieldSide(float yPos)
-        {           
+        {
             if (yPos > 0)
                 return Side.B;
             return PongGame.Side.A;
@@ -43,6 +46,15 @@ namespace PPong.Game
         [SerializeField]
         private Racket m_racketB;
 
+        [SerializeField]
+        private Transform m_eastWall;
+
+        [SerializeField]
+        private Transform m_westWall;
+
+        public float EastBorder { get; private set; }
+        public float WestBorder { get; private set; }
+
 
         public Ball GameBall
         {
@@ -52,6 +64,11 @@ namespace PPong.Game
         private PlayerBase m_playerA;
         private PlayerBase m_playerB;
 
+        PlayerBase GetPlayer(Side side)
+        {
+            return side == Side.A ? m_playerA : m_playerB;
+        }
+
         public static PongGame Instance { private set; get; }
 
 
@@ -59,16 +76,18 @@ namespace PPong.Game
         {
             GameMode = Mode.PlayerVsSelf;
             Instance = this;
-            //m_playerA = new PlayerLocal(m_racketA);
-            m_playerA = new PlayerAI(m_racketA, PlayerAI.Difficulty.Eazy);
+            m_playerA = new PlayerLocal(m_racketA);
+            //m_playerA = new PlayerAI(m_racketA, PlayerAI.Difficulty.Eazy);
             m_playerB = new PlayerAI(m_racketB, PlayerAI.Difficulty.Normal);
+
+            EastBorder = m_eastWall.position.x;
+            WestBorder = m_westWall.position.x;
         }
 
         void Start()
         {
-
+            StartCoroutine(m_gameBall.GiveInitialImpulse(Side.B, 0));
         }
-
 
         void FixedUpdate()
         {
@@ -76,9 +95,19 @@ namespace PPong.Game
             m_playerB.FixedPlayerUpdate();
         }
 
-        public void OnBallScored()
+        public int GetScore(Side side)
         {
-
+            return GetPlayer(side).Score;
         }
+
+        public void OnBallScored(Side ballSide)
+        {
+            Side winnerSide = ballSide == Side.A ? Side.B : Side.A;
+            GetPlayer(winnerSide).Score++;
+            m_gameBall.Reset();
+            StartCoroutine(m_gameBall.GiveInitialImpulse(winnerSide, BALL_IMPULSE_DELAY));
+        }
+
+       
     }
 }

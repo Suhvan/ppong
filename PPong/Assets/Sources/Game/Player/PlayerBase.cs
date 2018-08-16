@@ -5,7 +5,7 @@ namespace PPong.Game
     public abstract class PlayerBase
     {
         protected Racket m_racket;
-        protected int m_score;
+        public int Score { get; set; }
 
         public PongGame.Side FieldSide { get { return m_racket.FieldSide; } }
 
@@ -13,14 +13,15 @@ namespace PPong.Game
         {
             m_racket = racket;
             m_racket.Owner = this;
-            m_score = 0;
+            Score = 0;
         }
 
         public abstract float GetNewRacketXPos();
         
         public void FixedPlayerUpdate()
         {
-            m_racket.CachedTransform.position = new Vector2(GetNewRacketXPos(), m_racket.CachedTransform.position.y);
+            float newRacketPos = Mathf.Clamp(GetNewRacketXPos(), PongGame.Instance.WestBorder + m_racket.HalfSize, PongGame.Instance.EastBorder - m_racket.HalfSize);
+            m_racket.CachedTransform.position = new Vector2(newRacketPos, m_racket.CachedTransform.position.y);
         }
         
     }

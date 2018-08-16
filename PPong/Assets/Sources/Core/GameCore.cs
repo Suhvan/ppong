@@ -4,13 +4,28 @@ using UnityEngine;
 
 public class GameCore : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
+    public static GameCore Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null)
+            Destroy(this.gameObject);
+
+        Instance = this;
+        DontDestroyOnLoad(this);
+    }
+
+    
+    void Start ()
+    {
 		
 	}
 	
-	// Update is called once per frame
-	void Update () {
+	
+	void Update ()
+    {
 		
 	}
+
+    
 }

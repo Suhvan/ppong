@@ -100,10 +100,6 @@ namespace PPong.Game
             {
                 PongGame.Instance.OnBallScored( CurrentFieldSide );
             }
-            else
-            {
-                m_cachedRigidbody.velocity = new Vector2(-m_cachedRigidbody.velocity.x, m_cachedRigidbody.velocity.y);
-            }
         }
 
 

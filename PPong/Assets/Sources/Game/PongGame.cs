@@ -73,9 +73,17 @@ namespace PPong.Game
 
 
         void Awake()
+        {   
+            
+            Instance = this;            
+
+            EastBorder = m_eastWall.position.x;
+            WestBorder = m_westWall.position.x;
+        }
+
+        void Start()
         {
             GameMode = GameCore.Instance.PongSettings.GameMode;
-            Instance = this;
 
             switch (GameMode)
             {
@@ -89,12 +97,6 @@ namespace PPong.Game
                     break;
             }
 
-            EastBorder = m_eastWall.position.x;
-            WestBorder = m_westWall.position.x;
-        }
-
-        void Start()
-        {
             StartCoroutine(m_gameBall.GiveInitialImpulse(Side.B, 0));
         }
 

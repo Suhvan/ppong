@@ -29,6 +29,8 @@ public class GameCore : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this);
 
+        PongSettings = new GameSettings() { GameMode = PongGame.Mode.PlayerVsSelf};
+
         switch (SceneManager.GetActiveScene().name)
         {
             case MENU_SCENE_NAME:

@@ -74,11 +74,20 @@ namespace PPong.Game
 
         void Awake()
         {
-            GameMode = Mode.PlayerVsSelf;
+            GameMode = GameCore.Instance.PongSettings.GameMode;
             Instance = this;
-            m_playerA = new PlayerLocal(m_racketA);
-            //m_playerA = new PlayerAI(m_racketA, PlayerAI.Difficulty.Eazy);
-            m_playerB = new PlayerAI(m_racketB, PlayerAI.Difficulty.Normal);
+
+            switch (GameMode)
+            {
+                case Mode.PlayerVsSelf:
+                    m_playerA = new PlayerLocal(m_racketA);
+                    m_playerB = new PlayerLocal(m_racketB);
+                    break;
+                case Mode.PlayerVsAI:
+                    m_playerA = new PlayerLocal(m_racketA);
+                    m_playerB = new PlayerAI(m_racketB, GameCore.Instance.PongSettings.AIDifficulty);
+                    break;
+            }
 
             EastBorder = m_eastWall.position.x;
             WestBorder = m_westWall.position.x;

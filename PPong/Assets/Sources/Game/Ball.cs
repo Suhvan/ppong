@@ -45,7 +45,10 @@ namespace PPong.Game
 
         void Start()
         {
-            
+            if (PongGame.Instance.IsClient)
+            {
+                
+            }
         }
 
         public void Reset()
@@ -101,9 +104,6 @@ namespace PPong.Game
                 PongGame.Instance.OnBallScored( CurrentFieldSide );
             }
         }
-
-
-
 
     }
 }

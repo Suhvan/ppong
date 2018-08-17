@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace PPong.Game
 {
@@ -12,7 +13,9 @@ namespace PPong.Game
         public enum Mode
         {
             PlayerVsSelf,
-            PlayerVsAI
+            PlayerVsAI,
+            PvPClient,
+            PvPHost
         }
 
         public enum Side
@@ -35,9 +38,11 @@ namespace PPong.Game
             return PongGame.Side.A;
         }
 
-        private Mode GameMode { get; set; }
+        public Mode GameMode { get; private set; }
 
-        [SerializeField]
+        public bool IsClient { get { return GameMode == Mode.PvPClient; }  }
+
+        //[SerializeField]
         private Ball m_gameBall;
 
         [SerializeField]
@@ -51,6 +56,12 @@ namespace PPong.Game
 
         [SerializeField]
         private Transform m_westWall;
+
+        [SerializeField]
+        private List<Ball> m_ballPrefabs;
+
+        NetworkManager m_networkManager;
+             
 
         public float EastBorder { get; private set; }
         public float WestBorder { get; private set; }
@@ -73,9 +84,8 @@ namespace PPong.Game
 
 
         void Awake()
-        {   
-            
-            Instance = this;            
+        {
+            Instance = this;
 
             EastBorder = m_eastWall.position.x;
             WestBorder = m_westWall.position.x;
@@ -87,6 +97,8 @@ namespace PPong.Game
 
             switch (GameMode)
             {
+                case Mode.PvPHost:
+                case Mode.PvPClient:
                 case Mode.PlayerVsSelf:
                     m_playerA = new PlayerLocal(m_racketA);
                     m_playerB = new PlayerLocal(m_racketB);
@@ -96,6 +108,25 @@ namespace PPong.Game
                     m_playerB = new PlayerAI(m_racketB, GameCore.Instance.PongSettings.AIDifficulty);
                     break;
             }
+
+            m_networkManager = FindObjectOfType<NetworkManager>();
+
+            
+
+            if (GameMode == Mode.PvPHost)
+            {
+                m_networkManager.StartHost();
+            }
+
+            if (GameMode == Mode.PvPClient)
+                m_networkManager.StartClient();
+
+            if (GameMode != Mode.PvPClient)
+                CreateRandomBall();
+
+
+            if (PongGame.Instance.IsClient)
+                return;
 
             StartCoroutine(m_gameBall.GiveInitialImpulse(Side.B, 0));
         }
@@ -113,12 +144,36 @@ namespace PPong.Game
 
         public void OnBallScored(Side ballSide)
         {
+            if (PongGame.Instance.IsClient)
+                return;
             Side winnerSide = ballSide == Side.A ? Side.B : Side.A;
             GetPlayer(winnerSide).Score++;
-            m_gameBall.Reset();
+            DestroyOldBall();
+            CreateRandomBall();
             StartCoroutine(m_gameBall.GiveInitialImpulse(winnerSide, BALL_IMPULSE_DELAY));
         }
 
-       
+        private void CreateRandomBall()
+        {
+            if (GameMode != Mode.PvPClient)
+                m_gameBall = Instantiate(m_ballPrefabs[Random.Range(0, m_ballPrefabs.Count)]);
+
+            if (GameMode == Mode.PvPHost)
+            {   
+                NetworkServer.Spawn(m_gameBall.gameObject);
+            }
+        }
+
+
+        private void DestroyOldBall()
+        {
+            if (GameMode == Mode.PvPClient)
+                return;
+            if (GameMode == Mode.PvPHost)
+                NetworkServer.Destroy(m_gameBall.gameObject);
+            else
+                Destroy(m_gameBall.gameObject);
+        }
+
     }
 }

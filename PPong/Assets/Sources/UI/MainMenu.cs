@@ -17,7 +17,7 @@ public class MainMenu : MonoBehaviour
 
     public void StartPvSelf()
     {
-        GameCore.Instance.PongSettings = new PPong.Game.GameSettings() { GameMode = PPong.Game.PongGame.Mode.PlayerVsSelf };
+        GameCore.Instance.PongSettings = new GameSettings() { GameMode = PPong.Game.PongGame.Mode.PlayerVsSelf };
         GameCore.Instance.ChangeGameState(GameCore.State.Pong);
     }
 
@@ -36,9 +36,21 @@ public class MainMenu : MonoBehaviour
         StartPvAI(PlayerAI.Difficulty.Unreal);
     }
 
+    public void StartPvPHost()
+    {
+        GameCore.Instance.PongSettings = new GameSettings() { GameMode = PPong.Game.PongGame.Mode.PvPHost };
+        GameCore.Instance.ChangeGameState(GameCore.State.Pong);
+    }
+
+    public void StartPvPClient()
+    {
+        GameCore.Instance.PongSettings = new GameSettings() { GameMode = PPong.Game.PongGame.Mode.PvPClient };
+        GameCore.Instance.ChangeGameState(GameCore.State.Pong);
+    }
+
     public void StartPvAI( PlayerAI.Difficulty dif )
     {
-        GameCore.Instance.PongSettings = new PPong.Game.GameSettings() { GameMode = PongGame.Mode.PlayerVsAI, AIDifficulty = dif };
+        GameCore.Instance.PongSettings = new GameSettings() { GameMode = PongGame.Mode.PlayerVsAI, AIDifficulty = dif };
         GameCore.Instance.ChangeGameState(GameCore.State.Pong);
     }
 }

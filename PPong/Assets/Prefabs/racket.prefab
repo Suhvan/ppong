@@ -37,8 +37,6 @@ GameObject:
   - component: {fileID: 4264499354758584}
   - component: {fileID: 114754303061145224}
   - component: {fileID: 61689586297882750}
-  - component: {fileID: 114482095759920464}
-  - component: {fileID: 114510175639776410}
   m_Layer: 0
   m_Name: racket
   m_TagString: Untagged
@@ -65,8 +63,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1580702191292402}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -4, z: 0}
   m_LocalScale: {x: 1, y: -1, z: 1}
   m_Children:
   - {fileID: 4088625842291482}
@@ -98,59 +96,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 2.401179, y: 0.30117893}
   m_EdgeRadius: 0
---- !u!114 &114482095759920464
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1580702191292402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 31
-    i1: 36
-    i2: 224
-    i3: 165
-    i4: 43
-    i5: 90
-    i6: 122
-    i7: 52
-    i8: 27
-    i9: 143
-    i10: 2
-    i11: 6
-    i12: 10
-    i13: 60
-    i14: 253
-    i15: 8
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 1
---- !u!114 &114510175639776410
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1580702191292402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TransformSyncMode: 1
-  m_SendInterval: 0.03846154
-  m_SyncRotationAxis: 0
-  m_RotationSyncCompression: 0
-  m_SyncSpin: 0
-  m_MovementTheshold: 0.001
-  m_VelocityThreshold: 0.0001
-  m_SnapThreshold: 5
-  m_InterpolateRotation: 1
-  m_InterpolateMovement: 1
 --- !u!114 &114754303061145224
 MonoBehaviour:
   m_ObjectHideFlags: 1

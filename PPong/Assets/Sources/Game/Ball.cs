@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using PPong.Network;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,18 +9,18 @@ namespace PPong.Game
     {
         private Rigidbody2D m_cachedRigidbody;
 
-        private Transform m_cachedTransform;
+        public Transform CachedTransform { get; private set; }
 
         public float XPos
         {
-            get { return m_cachedTransform.position.x; }
+            get { return CachedTransform.position.x; }
         }
 
         public PongGame.Side CurrentFieldSide
         {
             get
             {
-                return PongGame.GetFieldSide(m_cachedTransform.position.y);
+                return PongGame.GetFieldSide(CachedTransform.position.y);
             }
         }
 
@@ -32,33 +33,47 @@ namespace PPong.Game
         }
 
 
-       [SerializeField]
+        [SerializeField]
         private float m_ballSpeed = 10;
+
+        InterpolatingHelper InterpHelper { get; set; }
 
         public float BallSpeed { get { return m_ballSpeed; } }
 
         void Awake()
-        {
+        {   
             m_cachedRigidbody = gameObject.GetComponent<Rigidbody2D>();
-            m_cachedTransform = transform;
+            
+            if (PongGame.Instance.IsClient)
+            {
+                Destroy(m_cachedRigidbody);                
+            }
+
+            CachedTransform = transform;
+           
         }
 
         void Start()
         {
             if (PongGame.Instance.IsClient)
             {
-                
+                InterpHelper = new InterpolatingHelper();
             }
         }
 
         public void Reset()
         {
-            m_cachedTransform.position = Vector2.zero;
+            if (PongGame.Instance.IsClient)
+                return;
+            CachedTransform.position = Vector2.zero;
             m_cachedRigidbody.velocity = Vector2.zero;
         }
 
         public IEnumerator GiveInitialImpulse(PongGame.Side targetSide, float delay)
         {
+            if (PongGame.Instance.IsClient)
+                yield break; 
+
             yield return new WaitForSeconds(delay);
             float forceX = Random.Range(-1f, 1f);
             float forceY = targetSide == PongGame.Side.B ? 1 : -1;
@@ -70,13 +85,11 @@ namespace PPong.Game
             m_cachedRigidbody.velocity = direction.normalized * m_ballSpeed;
         }
 
-        void Update()
-        {
-
-        }
-
         void OnCollisionEnter2D(Collision2D col)
         {
+            if (PongGame.Instance.IsClient)
+                return;
+
             Racket racket = col.gameObject.GetComponent<Racket>();
             if (racket != null)
             {
@@ -89,7 +102,7 @@ namespace PPong.Game
                 float forceX = sumX / col.contactCount - racket.transform.position.x;
                 float forceY = CurrentFieldSide == PongGame.Side.A ? 1 : -1;
 
-                if (Mathf.Abs(m_cachedTransform.position.y) > Mathf.Abs(racket.transform.position.y))
+                if (Mathf.Abs(CachedTransform.position.y) > Mathf.Abs(racket.transform.position.y))
                     forceY *= -1;
                 racket.OnBallHit();
                 SetVelocity(new Vector2(forceX, forceY));
@@ -99,10 +112,26 @@ namespace PPong.Game
 
         void OnTriggerEnter2D(Collider2D other)
         {
+            if (PongGame.Instance.IsClient)
+                return;
+
             if (other.gameObject.name == "border")
             {
                 PongGame.Instance.OnBallScored( CurrentFieldSide );
             }
+        }
+
+        void Update()
+        {
+            if (!PongGame.Instance.IsClient)
+                return;
+            
+            CachedTransform.position = InterpHelper.GetInterpolatedPos();
+        }
+
+        public void OnNewSnapshot(Vector2 snapPos, float serverTime)
+        {
+            InterpHelper.OnNewSnapshot(snapPos, serverTime);
         }
 
     }

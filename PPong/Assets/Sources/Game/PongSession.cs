@@ -15,9 +15,16 @@ namespace PPong.Game
 
         private NetworkConnection EnemyConn { get; set; }
 
+        private string m_address = PongNetworkManager.DEFAULT_ADDRESS;
+
         public void Init()
         {
             Ready = false;
+
+            if (!string.IsNullOrEmpty(Core.GameCore.Instance.PongSettings.ConnectionAddress))
+            {
+                m_address = Core.GameCore.Instance.PongSettings.ConnectionAddress;
+            }
 
             switch (PongGame.Instance.GameMode)
             {
@@ -28,7 +35,7 @@ namespace PPong.Game
                     return;
                 case PongGame.Mode.PvPClient:
                     StartClient();
-                    PromptMessage = "Awaiting server connection";
+                    PromptMessage = string.Format("Connecting to {0}...", m_address);
                     return;
                 case PongGame.Mode.PvPHost:
                     PromptMessage = "Awaiting enemy";
@@ -87,7 +94,12 @@ namespace PPong.Game
 
         public void StartClient()
         {
-            var client = PongNetworkManager.ConnectClient(PongNetworkManager.ADDRESS, PongNetworkManager.PORT, CL_OnConnected, CL_OnDisconnected);
+            var address = PongNetworkManager.DEFAULT_ADDRESS;
+            if (!string.IsNullOrEmpty(Core.GameCore.Instance.PongSettings.ConnectionAddress))
+            {
+                address = Core.GameCore.Instance.PongSettings.ConnectionAddress;
+            }
+            var client = PongNetworkManager.ConnectClient(address, PongNetworkManager.PORT, CL_OnConnected, CL_OnDisconnected);
 
             client.RegisterHandler(PongMsgType.Snapshot, m =>
             {   
@@ -111,7 +123,7 @@ namespace PPong.Game
 
         private void CL_OnDisconnected()
         {
-            PromptMessage = "We got disconnected from server. Press Esc and try to join game again";
+            PromptMessage = string.Format("We got disconnected from server ({0}). Press Esc and try to join game again", m_address);
         }
     }
 }

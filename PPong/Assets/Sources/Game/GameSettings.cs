@@ -9,5 +9,6 @@ namespace PPong.Game
     {
         public PongGame.Mode GameMode;
         public PlayerAI.Difficulty AIDifficulty;
+        public string ConnectionAddress;
     }
 }

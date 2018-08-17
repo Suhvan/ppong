@@ -37,7 +37,7 @@ namespace PPong.Network
     public static class PongNetworkManager
     {
         public const int PORT = 7070;
-        public const string ADDRESS = "localhost";
+        public const string DEFAULT_ADDRESS = "localhost";
 
         public static bool IsServer { get { return NetworkServer.active; } }
         public static bool IsClient { get { return Client != null; } }

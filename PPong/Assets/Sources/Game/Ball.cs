@@ -9,6 +9,13 @@ namespace PPong.Game
     {
         private Rigidbody2D m_cachedRigidbody;
 
+        [SerializeField]
+        private float m_ballSpeed = 10;
+
+        public float BallSpeed { get { return m_ballSpeed; } }
+
+        InterpolatingHelper InterpHelper { get; set; }
+
         public Transform CachedTransform { get; private set; }
 
         public float XPos
@@ -32,14 +39,6 @@ namespace PPong.Game
             }
         }
 
-
-        [SerializeField]
-        private float m_ballSpeed = 10;
-
-        InterpolatingHelper InterpHelper { get; set; }
-
-        public float BallSpeed { get { return m_ballSpeed; } }
-
         void Awake()
         {   
             m_cachedRigidbody = gameObject.GetComponent<Rigidbody2D>();
@@ -57,7 +56,7 @@ namespace PPong.Game
         {
             if (PongGame.Instance.IsClient)
             {
-                InterpHelper = new InterpolatingHelper();
+                InterpHelper = new InterpolatingHelper() { SnappingEnabled = true };
             }
         }
 

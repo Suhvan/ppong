@@ -6,11 +6,12 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
-public static class GameMsgType
+public static class PongMsgType
 {   
     public static readonly short CheckProto = 1001;
     public static readonly short Snapshot = 1002;
     public static readonly short PlayerInput = 1003;
+    public static readonly short ResetBall = 1004;
 }
 
 
@@ -28,6 +29,11 @@ public class InputMessage : MessageBase
 {   
     public float MouseXPos;
     public float TS;
+}
+
+public class ResetBallMessage : MessageBase
+{
+    public int BallIndx;
 }
 
 public static class NetworkConfiguration
@@ -76,12 +82,12 @@ public static class PongNetworkManager
                 onDisconnect(m.conn);
         });
 
-        NetworkServer.RegisterHandler(GameMsgType.CheckProto, m =>
+        NetworkServer.RegisterHandler(PongMsgType.CheckProto, m =>
         {
             Debug.Log("GOT MESSAGE");
         });
 
-        NetworkServer.RegisterHandler(GameMsgType.PlayerInput, m =>
+        NetworkServer.RegisterHandler(PongMsgType.PlayerInput, m =>
         {
             var msg = m.ReadMessage<InputMessage>();
             //TODO move it to snapshot mgr!
@@ -115,11 +121,16 @@ public static class PongNetworkManager
         Client.RegisterHandler(MsgType.Connect, m => CL_OnConnected(m, onConnected));
         Client.RegisterHandler(MsgType.Disconnect, m => CL_OnDisconnect(m, onDisconnect));
 
-        Client.RegisterHandler(GameMsgType.Snapshot, m =>
+        Client.RegisterHandler(PongMsgType.Snapshot, m =>
         {
-            var msg = m.ReadMessage<SnapshotMessage>();
-            //TODO move it to snapshot mgr!
+            var msg = m.ReadMessage<SnapshotMessage>();            
             PPong.Game.PongGame.Instance.ApplySnapshot(msg);
+        });
+
+        Client.RegisterHandler(PongMsgType.ResetBall, m =>
+        {
+            var msg = m.ReadMessage<ResetBallMessage>();
+            PPong.Game.PongGame.Instance.OnResetBall(msg);
         });
 
 
@@ -139,7 +150,7 @@ public static class PongNetworkManager
     private static void CL_OnConnected(NetworkMessage msg, Action<NetworkConnection> onConnected)
     {
         Debug.Log("Client: onConnected");
-        SendToServer(GameMsgType.CheckProto);
+        SendToServer(PongMsgType.CheckProto);
         if (onConnected != null)
             onConnected(msg.conn);
     }

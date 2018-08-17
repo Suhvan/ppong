@@ -26,15 +26,25 @@ namespace PPong.Network
         }
 
         private static float s_interpDelay = 0.1f;
+        private static float s_sqrSnapDistance = 9;
+
+        public bool SnappingEnabled { get; set; }
         private List<PosSnapshot> m_snapshots = new List<PosSnapshot>();
 
 
         public void OnNewSnapshot(Vector2 snapPos, float serverTime)
-        {
+        {            
+            m_syncTime = Time.time;
+            m_serverTime = serverTime;
+
+            if (SnappingEnabled && m_snapshots.Count > 1)
             {
-                m_syncTime = Time.time;
-                m_serverTime = serverTime;
+                if ((snapPos - m_snapshots[m_snapshots.Count - 1].Position).sqrMagnitude > s_sqrSnapDistance)
+                {
+                    m_snapshots.Clear();
+                }
             }
+            
             m_snapshots.Add(new PosSnapshot()
             {
                 Position = snapPos,
@@ -56,7 +66,8 @@ namespace PPong.Network
 
             Vector2 newPos = Vector2.zero;
             if (m_snapshots.Count > 1)
-            {
+            {  
+
                 int idx = m_snapshots.Count - 1;
                 for (int i = 1; i < m_snapshots.Count; i++)
                 {

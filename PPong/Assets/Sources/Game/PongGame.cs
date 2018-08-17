@@ -41,6 +41,7 @@ namespace PPong.Game
         public Mode GameMode { get; private set; }
 
         public bool IsClient { get { return GameMode == Mode.PvPClient; }  }
+        public bool IsHost { get { return GameMode == Mode.PvPHost; } }
 
         [SerializeField]
         private Ball m_gameBall;
@@ -131,12 +132,12 @@ namespace PPong.Game
             
 
             //TODO move network related stuff to other class
-            if (GameMode == Mode.PvPHost)
+            if (IsHost)
             {
                 PongNetworkManager.StartServer(null);
             }
 
-            if (GameMode == Mode.PvPClient)
+            if (IsClient)
             {
                 PongNetworkManager.ConnectClient("localhost", PongNetworkManager.PORT, null, null);
             }
@@ -177,46 +178,44 @@ namespace PPong.Game
 
         public void OnBallScored(Side ballSide)
         {
-            if (PongGame.Instance.IsClient)
+            if (IsClient)
                 return;
+
             Side winnerSide = ballSide == Side.A ? Side.B : Side.A;
-            GetPlayer(winnerSide).Score++;
+            GetPlayer(winnerSide).Score++;           
+            DestroyOldBall();
+            CreateRandomBall();
             GameBall.Reset();
-           // DestroyOldBall();
-           // CreateRandomBall();
             StartCoroutine(m_gameBall.GiveInitialImpulse(winnerSide, BALL_IMPULSE_DELAY));
         }
 
-       /* private void CreateRandomBall()
+       private void CreateRandomBall()
         {
-            if (GameMode != Mode.PvPClient)
-                m_gameBall = Instantiate(m_ballPrefabs[Random.Range(0, m_ballPrefabs.Count)]);
+            var ballIndex = Random.Range(0, m_ballPrefabs.Count);
+            m_gameBall = Instantiate(m_ballPrefabs[ballIndex]);
 
-            if (GameMode == Mode.PvPHost)   
-            {   
-                NetworkServer.Spawn(m_gameBall.gameObject);                
+            if (IsHost)   
+            {
+                PongNetworkManager.SendToClients(PongMsgType.ResetBall, new ResetBallMessage() { BallIndx = ballIndex }, NetworkConfiguration.ChannelReliableSequenced);
             }
         }
 
 
         private void DestroyOldBall()
         {
-            if (GameMode == Mode.PvPClient)
+            if (IsClient)
                 return;
-            if (GameMode == Mode.PvPHost)
-                NetworkServer.Destroy(m_gameBall.gameObject);
-            else
-                Destroy(m_gameBall.gameObject);
-        }*/
+            
+            Destroy(m_gameBall.gameObject);
+        }
 
         //TODO move it to snapshot manager
 
         public void ApplySnapshot(SnapshotMessage msg )
         {
-            //m_gameBall.transform.position = msg.BallPos;
+            if (!IsClient)
+                return;
             m_gameBall.OnNewSnapshot(msg.BallPos, msg.TS);
-            //TODO put this into Player
-            //m_racketA.CachedTransform.position = new Vector2(msg.RacketAXPos, m_racketA.CachedTransform.position.y);
             (m_playerA as PlayerInterpolated).OnNewSnapshot(msg.RacketAXPos, msg.TS);
             (m_playerB as PlayerInterpolated).OnNewSnapshot(msg.RacketBXPos, msg.TS);
             m_playerA.Score = msg.ScoreA;
@@ -225,10 +224,16 @@ namespace PPong.Game
         }
 
         public void ApplyPlayerInput(InputMessage msg)
-        {   
-            //TODO put this into Player
-            m_racketB.CachedTransform.position = new Vector2(msg.MouseXPos, m_racketB.CachedTransform.position.y);
+        {
+            if (!IsHost)
+                return;
             (m_playerB as PlayerRemote).OnNewMousePos(msg.MouseXPos);
+        }
+
+        public void OnResetBall(ResetBallMessage msg)
+        {
+            Destroy(m_gameBall.gameObject);
+            m_gameBall = Instantiate(m_ballPrefabs[msg.BallIndx]);
         }
 
     }

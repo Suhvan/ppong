@@ -17,7 +17,7 @@ namespace PPong.Core
             m_updateTimer += Time.deltaTime;
             if (m_updateTimer > m_updateRate)
             {
-                PongNetworkManager.SendToServer(GameMsgType.PlayerInput, new InputMessage()
+                PongNetworkManager.SendToServer(PongMsgType.PlayerInput, new InputMessage()
                 {
                     MouseXPos = Camera.main.ScreenToWorldPoint(Input.mousePosition).x,
                     TS = Time.time

@@ -18,7 +18,7 @@ namespace PPong.Core
         {
             return new SnapshotMessage()
             {
-                BallPos = new Vector2(PongGame.Instance.GameBall.CachedTransform.position.x, PongGame.Instance.GameBall.CachedTransform.position.y),
+                BallPos = PongGame.Instance.GameBall !=null ? new Vector2( PongGame.Instance.GameBall.CachedTransform.position.x, PongGame.Instance.GameBall.CachedTransform.position.y) : Vector2.zero,
                 RacketAXPos = PongGame.Instance.GetRacketPos(PongGame.Side.A),
                 RacketBXPos = PongGame.Instance.GetRacketPos(PongGame.Side.B),
                 ScoreA = PongGame.Instance.GetScore(PongGame.Side.A),

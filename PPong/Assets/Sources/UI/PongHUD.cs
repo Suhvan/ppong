@@ -8,6 +8,9 @@ namespace PPong.UI
         [SerializeField]
         Text m_score;
 
+        [SerializeField]
+        Text m_promtMessage;
+
         // Use this for initialization
         void Start()
         {
@@ -18,6 +21,7 @@ namespace PPong.UI
         void Update()
         {
             m_score.text = string.Format("{0}\n{1}", Game.PongGame.Instance.GetScore(Game.PongGame.Side.B), Game.PongGame.Instance.GetScore(Game.PongGame.Side.A));
+            m_promtMessage.text = Game.PongGame.Instance.Session.PromptMessage;
         }
     }
 }

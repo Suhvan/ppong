@@ -3,16 +3,12 @@ using PPong.Network;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace PPong.Game
 {
     public class PongGame : MonoBehaviour
     {
         private const float BALL_IMPULSE_DELAY = 0.5f;
-
-        [SerializeField]
-        private Ball m_gameBall;
 
         [SerializeField]
         private Racket m_racketA;
@@ -62,10 +58,12 @@ namespace PPong.Game
         public bool IsClient { get { return GameMode == Mode.PvPClient; }  }
         public bool IsHost { get { return GameMode == Mode.PvPHost; } }
 
+        public PongSession Session { get; private set; }
+
         public float EastBorder { get; private set; }
         public float WestBorder { get; private set; }
 
-
+        private Ball m_gameBall;
         public Ball GameBall
         {
             get { return m_gameBall; }
@@ -99,6 +97,7 @@ namespace PPong.Game
         void Awake()
         {
             Instance = this;
+            Session = new PongSession();
 
             EastBorder = m_eastWall.position.x;
             WestBorder = m_westWall.position.x;
@@ -107,6 +106,8 @@ namespace PPong.Game
         void Start()
         {
             GameMode = GameCore.Instance.PongSettings.GameMode;
+
+            Session.Init();
 
             switch (GameMode)
             {
@@ -132,11 +133,23 @@ namespace PPong.Game
             if (PongGame.Instance.IsClient)
                 return;
 
-            StartCoroutine(m_gameBall.GiveInitialImpulse(Side.B, 0));
-        }        
+            StartCoroutine(ThrowBallWhenReady(Side.A));
+        }
+
+        IEnumerator ThrowBallWhenReady(Side targetSide)
+        {
+            while (!Session.Ready)
+                yield return null;
+
+            LaunchBall(targetSide);
+        }
+        
 
         void FixedUpdate()
         {
+            if (!Session.Ready)
+                return;
+
             m_playerA.FixedPlayerUpdate();
             m_playerB.FixedPlayerUpdate();
         }
@@ -147,6 +160,9 @@ namespace PPong.Game
             {
                 GameCore.Instance.ChangeGameState(GameCore.State.Menu);
             }
+
+            if (!Session.Ready)
+                return;
 
             switch (GameMode)
             {
@@ -170,11 +186,16 @@ namespace PPong.Game
                 return;
 
             Side winnerSide = ballSide == Side.A ? Side.B : Side.A;
-            GetPlayer(winnerSide).Score++;           
+            GetPlayer(winnerSide).Score++;
             DestroyOldBall();
+            StartCoroutine(ThrowBallWhenReady(winnerSide));
+        }
+
+        private void LaunchBall(Side targetSide)
+        {
             CreateRandomBall();
             GameBall.Reset();
-            StartCoroutine(m_gameBall.GiveInitialImpulse(winnerSide, BALL_IMPULSE_DELAY));
+            StartCoroutine(m_gameBall.GiveInitialImpulse(targetSide, BALL_IMPULSE_DELAY));
         }
 
        private void CreateRandomBall()
@@ -202,7 +223,8 @@ namespace PPong.Game
         {
             if (!IsClient)
                 return;
-            m_gameBall.OnNewSnapshot(msg.BallPos, msg.TS);
+            if(m_gameBall!=null)
+                m_gameBall.OnNewSnapshot(msg.BallPos, msg.TS);
             (m_playerA as PlayerInterpolated).OnNewSnapshot(msg.RacketAXPos, msg.TS);
             (m_playerB as PlayerInterpolated).OnNewSnapshot(msg.RacketBXPos, msg.TS);
             m_playerA.Score = msg.ScoreA;
@@ -221,7 +243,8 @@ namespace PPong.Game
         {
             if (!IsClient)
                 return;
-            Destroy(m_gameBall.gameObject);
+            if(m_gameBall!=null)
+                Destroy(m_gameBall.gameObject);
             m_gameBall = Instantiate(m_ballPrefabs[msg.BallIndx]);
         }
 

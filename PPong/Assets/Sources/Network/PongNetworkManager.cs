@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace PPong.Network
     public static class NetworkConfiguration
     {
         private static HostTopology s_hostTopology;
-
+        public static int ChannelReliable { get; private set; }
         public static int ChannelReliableSequenced { get; private set; }
         public static int ChannelUnreliableSequenced { get; private set; }
 
@@ -21,6 +20,7 @@ namespace PPong.Network
             {
                 var config = new ConnectionConfig();
                 ChannelReliableSequenced = config.AddChannel(QosType.ReliableSequenced);
+                ChannelReliable = config.AddChannel(QosType.Reliable);
                 ChannelUnreliableSequenced = config.AddChannel(QosType.UnreliableSequenced);
                 s_hostTopology = new HostTopology(config, 2);
             }
@@ -54,18 +54,6 @@ namespace PPong.Network
                     onDisconnect(m.conn);
             });
 
-            NetworkServer.RegisterHandler(PongMsgType.CheckProto, m =>
-            {
-                Debug.Log("GOT MESSAGE");
-            });
-
-            NetworkServer.RegisterHandler(PongMsgType.PlayerInput, m =>
-            {
-                var msg = m.ReadMessage<InputMessage>();
-                PPong.Game.PongGame.Instance.ApplyPlayerInput(msg);
-            });
-
-
             NetworkServer.Configure(NetworkConfiguration.GetHostTopology());
 
             if (!NetworkServer.Listen(PORT))
@@ -91,21 +79,6 @@ namespace PPong.Network
             Client.Connect(address, port);
             Client.RegisterHandler(MsgType.Connect, m => CL_OnConnected(m, onConnected));
             Client.RegisterHandler(MsgType.Disconnect, m => CL_OnDisconnect(m, onDisconnect));
-
-            Client.RegisterHandler(PongMsgType.Snapshot, m =>
-            {
-                var msg = m.ReadMessage<SnapshotMessage>();
-                PPong.Game.PongGame.Instance.ApplySnapshot(msg);
-            });
-
-            Client.RegisterHandler(PongMsgType.ResetBall, m =>
-            {
-                var msg = m.ReadMessage<ResetBallMessage>();
-                PPong.Game.PongGame.Instance.OnResetBall(msg);
-            });
-
-
-
             return Client;
         }
 
@@ -121,7 +94,6 @@ namespace PPong.Network
         private static void CL_OnConnected(NetworkMessage msg, Action<NetworkConnection> onConnected)
         {
             Debug.Log("Client: onConnected");
-            SendToServer(PongMsgType.CheckProto);
             if (onConnected != null)
                 onConnected(msg.conn);
         }
@@ -132,7 +104,7 @@ namespace PPong.Network
             return conn != null && conn.isConnected && !string.IsNullOrEmpty(conn.address);
         }
 
-        public static void SendMessage(NetworkConnection conn, short msgType, MessageBase msg = null, int channel = -1)
+        private static void SendMessage(NetworkConnection conn, short msgType, MessageBase msg = null, int channel = -1)
         {
             if (!IsConnected(conn))
                 return;

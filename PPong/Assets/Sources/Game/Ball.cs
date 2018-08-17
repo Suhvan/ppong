@@ -1,6 +1,5 @@
 ﻿using PPong.Network;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace PPong.Game
@@ -14,7 +13,16 @@ namespace PPong.Game
 
         public float BallSpeed { get { return m_ballSpeed; } }
 
-        InterpolatingHelper InterpHelper { get; set; }
+        InterpolatingHelper m_interpHelper;
+        InterpolatingHelper InterpHelper
+        {
+            get
+            {
+                if (m_interpHelper == null)
+                    m_interpHelper = new InterpolatingHelper() { SnappingEnabled = true };
+                return m_interpHelper;
+            }
+        }
 
         public Transform CachedTransform { get; private set; }
 
@@ -53,11 +61,7 @@ namespace PPong.Game
         }
 
         void Start()
-        {
-            if (PongGame.Instance.IsClient)
-            {
-                InterpHelper = new InterpolatingHelper() { SnappingEnabled = true };
-            }
+        {  
         }
 
         public void Reset()

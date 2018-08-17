@@ -15,7 +15,6 @@ namespace PPong.Core
         public GameSettings PongSettings { get; set; }
         public SnapshotManager SnapshotManager { get; private set; }
         public InputManager InputManager { get; private set; }
-        
 
         public enum State
         {
@@ -85,11 +84,8 @@ namespace PPong.Core
                     {
                         if (PongGame.Instance == null)
                             return;
-                        if (PongGame.Instance.IsClient)
-                            PongNetworkManager.CL_Shutdown();
-                        else if(PongGame.Instance.IsHost)
-                            PongNetworkManager.SV_Shutdown();
-                        break;
+                        PongGame.Instance.Session.Shutdown();
+                        return;
                     }
             }
         }
@@ -98,15 +94,7 @@ namespace PPong.Core
         {
             switch (newState)
             {
-                case State.Pong:
-                    if (PongSettings.GameMode == PongGame.Mode.PvPHost)
-                    {
-                        PongNetworkManager.StartServer(null);
-                    }
-                    else if (PongSettings.GameMode == PongGame.Mode.PvPClient)
-                    {
-                        PongNetworkManager.ConnectClient("localhost", PongNetworkManager.PORT, null, null);
-                    }
+                case State.Pong:                   
                     InputManager.Reset();
                     SnapshotManager.Reset();
                     SceneManager.LoadScene(PONG_SCENE_NAME);

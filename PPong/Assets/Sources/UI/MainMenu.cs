@@ -54,4 +54,10 @@ public class MainMenu : MonoBehaviour
         GameCore.Instance.PongSettings = new GameSettings() { GameMode = PongGame.Mode.PlayerVsAI, AIDifficulty = dif };
         GameCore.Instance.ChangeGameState(GameCore.State.Pong);
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
 }

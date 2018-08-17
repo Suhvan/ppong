@@ -118,10 +118,7 @@ namespace PPong.Game
             if (PongGame.Instance.IsClient)
                 return;
 
-            if (other.gameObject.name == "border")
-            {
-                PongGame.Instance.OnBallScored( CurrentFieldSide );
-            }
+            PongGame.Instance.OnBallScored( CurrentFieldSide );
         }
 
         void Update()

@@ -49,11 +49,14 @@ namespace PPong.Game
 
         public void StartServer()
         {
-            PongNetworkManager.StartServer(SV_OnDisconnected);
+            if (PongNetworkManager.StartServer(SV_OnDisconnected) < 0)
+            {
+                PromptMessage = "Failed to start server. Press Esc and try to host game again";
+                return;
+            }
 
             NetworkServer.RegisterHandler(PongMsgType.CheckProto, m =>
-            {
-                Debug.Log("GOT MESSAGE");
+            {   
                 if (EnemyConn != null && m.conn!= EnemyConn)
                 {
                     //There can be only ONE
@@ -72,9 +75,19 @@ namespace PPong.Game
             });
         }
 
+        private void SV_OnDisconnected(NetworkConnection conn)
+        {
+            if (conn == EnemyConn)
+            {
+                EnemyConn = null;
+                PromptMessage = "Lost connection with enemy. Waiting for another one";
+                Ready = false;
+            }
+        }
+
         public void StartClient()
         {
-            var client = PongNetworkManager.ConnectClient("localhost", PongNetworkManager.PORT, CL_OnConnected, CL_OnDisconnected);
+            var client = PongNetworkManager.ConnectClient(PongNetworkManager.ADDRESS, PongNetworkManager.PORT, CL_OnConnected, CL_OnDisconnected);
 
             client.RegisterHandler(PongMsgType.Snapshot, m =>
             {   
@@ -87,16 +100,6 @@ namespace PPong.Game
                 var msg = m.ReadMessage<ResetBallMessage>();
                 PongGame.Instance.OnResetBall(msg);
             });
-        }
-
-        private void SV_OnDisconnected(NetworkConnection conn)
-        {
-            if (conn == EnemyConn)
-            {
-                EnemyConn = null;
-                PromptMessage = "Lost connection with enemy. Waiting for another one";
-                Ready = false;
-            }
         }
 
         private void CL_OnConnected(NetworkConnection conn)

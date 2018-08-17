@@ -30,7 +30,7 @@ namespace PPong.Core
         {
             if (Instance != null)
             {
-                Destroy(this.gameObject);
+                Destroy(gameObject);
                 return;
             }
 
@@ -50,20 +50,8 @@ namespace PPong.Core
                     CurrentState = State.Pong;
                     break;
             }
-
         }
-
-
-        void Start()
-        {
-
-        }
-
-
-        void Update()
-        {
-
-        }
+     
 
         public void ChangeGameState(State targetState)
         {

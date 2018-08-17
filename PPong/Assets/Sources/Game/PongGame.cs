@@ -130,7 +130,7 @@ namespace PPong.Game
                     break;
             }
 
-            if (PongGame.Instance.IsClient)
+            if (IsClient)
                 return;
 
             StartCoroutine(ThrowBallWhenReady(Side.A));

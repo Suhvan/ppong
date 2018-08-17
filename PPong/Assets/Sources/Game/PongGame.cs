@@ -1,4 +1,5 @@
 ﻿using PPong.Core;
+using PPong.Network;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,24 @@ namespace PPong.Game
     public class PongGame : MonoBehaviour
     {
         private const float BALL_IMPULSE_DELAY = 0.5f;
+
+        [SerializeField]
+        private Ball m_gameBall;
+
+        [SerializeField]
+        private Racket m_racketA;
+
+        [SerializeField]
+        private Racket m_racketB;
+
+        [SerializeField]
+        private Transform m_eastWall;
+
+        [SerializeField]
+        private Transform m_westWall;
+
+        [SerializeField]
+        private List<Ball> m_ballPrefabs;
 
         public enum Mode
         {
@@ -42,25 +61,6 @@ namespace PPong.Game
 
         public bool IsClient { get { return GameMode == Mode.PvPClient; }  }
         public bool IsHost { get { return GameMode == Mode.PvPHost; } }
-
-        [SerializeField]
-        private Ball m_gameBall;
-
-        [SerializeField]
-        private Racket m_racketA;
-
-        [SerializeField]
-        private Racket m_racketB;
-
-        [SerializeField]
-        private Transform m_eastWall;
-
-        [SerializeField]
-        private Transform m_westWall;
-
-        [SerializeField]
-        private List<Ball> m_ballPrefabs;
-             
 
         public float EastBorder { get; private set; }
         public float WestBorder { get; private set; }
@@ -129,23 +129,6 @@ namespace PPong.Game
                     break;
             }
 
-            
-
-            //TODO move network related stuff to other class
-            if (IsHost)
-            {
-                PongNetworkManager.StartServer(null);
-            }
-
-            if (IsClient)
-            {
-                PongNetworkManager.ConnectClient("localhost", PongNetworkManager.PORT, null, null);
-            }
-
-            //if (GameMode != Mode.PvPClient)
-           //     CreateRandomBall();
-
-
             if (PongGame.Instance.IsClient)
                 return;
 
@@ -160,6 +143,11 @@ namespace PPong.Game
 
         void Update()
         {
+            if (Input.GetKeyUp(KeyCode.Escape))
+            {
+                GameCore.Instance.ChangeGameState(GameCore.State.Menu);
+            }
+
             switch (GameMode)
             {
                 case Mode.PvPHost:
@@ -196,6 +184,7 @@ namespace PPong.Game
 
             if (IsHost)   
             {
+                //TODO move it some place else
                 PongNetworkManager.SendToClients(PongMsgType.ResetBall, new ResetBallMessage() { BallIndx = ballIndex }, NetworkConfiguration.ChannelReliableSequenced);
             }
         }
@@ -208,8 +197,6 @@ namespace PPong.Game
             
             Destroy(m_gameBall.gameObject);
         }
-
-        //TODO move it to snapshot manager
 
         public void ApplySnapshot(SnapshotMessage msg )
         {
@@ -232,6 +219,8 @@ namespace PPong.Game
 
         public void OnResetBall(ResetBallMessage msg)
         {
+            if (!IsClient)
+                return;
             Destroy(m_gameBall.gameObject);
             m_gameBall = Instantiate(m_ballPrefabs[msg.BallIndx]);
         }

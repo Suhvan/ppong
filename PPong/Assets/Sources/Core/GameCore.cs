@@ -1,4 +1,5 @@
 ﻿using PPong.Game;
+using PPong.Network;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +13,6 @@ namespace PPong.Core
         private const string PONG_SCENE_NAME = "Pong";
 
         public GameSettings PongSettings { get; set; }
-
         public SnapshotManager SnapshotManager { get; private set; }
         public InputManager InputManager { get; private set; }
         
@@ -70,16 +70,52 @@ namespace PPong.Core
         {
             if (targetState == CurrentState)
                 return;
-            switch (targetState)
+
+            ShutdownOldState(CurrentState);
+            PrepareNewState(targetState);
+
+            CurrentState = targetState;
+        }
+
+        private void ShutdownOldState(State oldState)
+        {
+            switch (oldState)
             {
                 case State.Pong:
+                    {
+                        if (PongGame.Instance == null)
+                            return;
+                        if (PongGame.Instance.IsClient)
+                            PongNetworkManager.CL_Shutdown();
+                        else if(PongGame.Instance.IsHost)
+                            PongNetworkManager.SV_Shutdown();
+                        break;
+                    }
+            }
+        }
+
+        private void PrepareNewState(State newState)
+        {
+            switch (newState)
+            {
+                case State.Pong:
+                    if (PongSettings.GameMode == PongGame.Mode.PvPHost)
+                    {
+                        PongNetworkManager.StartServer(null);
+                    }
+                    else if (PongSettings.GameMode == PongGame.Mode.PvPClient)
+                    {
+                        PongNetworkManager.ConnectClient("localhost", PongNetworkManager.PORT, null, null);
+                    }
+                    InputManager.Reset();
+                    SnapshotManager.Reset();
                     SceneManager.LoadScene(PONG_SCENE_NAME);
                     break;
                 case State.Menu:
                     SceneManager.LoadScene(MENU_SCENE_NAME);
                     break;
             }
-            CurrentState = targetState;
         }
+
     }
 }

@@ -158,7 +158,7 @@ GameObject:
   - component: {fileID: 222563021092933268}
   - component: {fileID: 114461406867505830}
   m_Layer: 5
-  m_Name: PlayerVSAIEasy
+  m_Name: PlayerVSAI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114716021950435326}
-        m_MethodName: StartPvEasyAI
+        m_MethodName: StartPvNormalAI
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

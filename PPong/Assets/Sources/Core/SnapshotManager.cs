@@ -1,8 +1,5 @@
 ﻿using PPong.Game;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using PPong.Network;
 using UnityEngine;
 
 namespace PPong.Core
@@ -11,6 +8,11 @@ namespace PPong.Core
     {   
         float m_updateRate = 0.02f;
         float m_updateTimer = 0;
+
+        public void Reset()
+        {
+            m_updateTimer = 0;
+        }
 
         public SnapshotMessage CreatePongSnapshot()
         {

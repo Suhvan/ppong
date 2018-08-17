@@ -39,10 +39,5 @@ namespace PPong.Game
                 ((PlayerAI)Owner).OnBallHit();
             }
         }
-
-        void Update()
-        {
-            //CachedTransform.position = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, CachedTransform.position.y);
-        }
     }
 }

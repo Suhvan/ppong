@@ -32,7 +32,7 @@ public class GameCore : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this);
 
-        PongSettings = new GameSettings() { GameMode = PongGame.Mode.PlayerVsSelf};
+        PongSettings = new GameSettings() { GameMode = PongGame.Mode.PvPHost};
 
         switch (SceneManager.GetActiveScene().name)
         {

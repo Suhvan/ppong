@@ -99,6 +99,9 @@ namespace PPong.Game
             {
                 case Mode.PvPHost:
                 case Mode.PvPClient:
+                    m_playerA = new PlayerAI(m_racketA, GameCore.Instance.PongSettings.AIDifficulty);
+                    m_playerB = new PlayerLocal(m_racketB);
+                    break;
                 case Mode.PlayerVsSelf:
                     m_playerA = new PlayerLocal(m_racketA);
                     m_playerB = new PlayerLocal(m_racketB);
@@ -111,15 +114,16 @@ namespace PPong.Game
 
             m_networkManager = FindObjectOfType<NetworkManager>();
 
-            
-
+            //TODO move network related stuff to other class
             if (GameMode == Mode.PvPHost)
             {
                 m_networkManager.StartHost();
             }
 
             if (GameMode == Mode.PvPClient)
+            {
                 m_networkManager.StartClient();
+            }
 
             if (GameMode != Mode.PvPClient)
                 CreateRandomBall();
@@ -131,8 +135,21 @@ namespace PPong.Game
             StartCoroutine(m_gameBall.GiveInitialImpulse(Side.B, 0));
         }
 
+        bool hackyLock = true;
+
         void FixedUpdate()
         {
+            if (hackyLock && NetworkServer.connections.Count > 1)
+            {
+                if (NetworkServer.connections[1].isReady)
+                {
+                    m_racketB.GetComponent<NetworkIdentity>().AssignClientAuthority(NetworkServer.connections[1]);
+                 //   NetworkServer.SpawnWithClientAuthority(m_racketB.gameObject, NetworkServer.connections[1]);
+                    hackyLock = false;
+                    Debug.Log("SET AUTH FOT CONN");
+                }
+            }
+
             m_playerA.FixedPlayerUpdate();
             m_playerB.FixedPlayerUpdate();
         }
@@ -160,7 +177,7 @@ namespace PPong.Game
 
             if (GameMode == Mode.PvPHost)
             {   
-                NetworkServer.Spawn(m_gameBall.gameObject);
+                NetworkServer.Spawn(m_gameBall.gameObject);                
             }
         }
 
